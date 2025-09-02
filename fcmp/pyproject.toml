@@ -1,0 +1,15 @@
+[project]
+name = "fcmp"
+version = "0.1.0"
+description = "Mock Monero FCMP++ Implementation"
+requires-python = ">=3.11"
+dependencies = ["common"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[dependency-groups]
+dev = [
+    "fcmp",
+    "pytest>=8.4.1",
+]

@@ -1,0 +1,23 @@
+[project]
+name = "mock-monero"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "common",
+    "fcmp", 
+    "monero",
+]
+
+[tool.uv.workspace]
+members = ["common", "fcmp", "monero"]
+
+[tool.uv.sources]
+common = { workspace = true }
+monero = { workspace = true }
+fcmp = { workspace = true }
+
+[tool.pytest.ini_options]
+testpaths = ["common/tests", "fcmp/tests", "monero/tests"]
+addopts = "--import-mode=importlib"
+
+
