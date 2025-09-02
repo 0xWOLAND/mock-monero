@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
-from .keys import SpendProof
-from .zkproof import ZKProof
+from common import SpendProof
+from fcmp.zkproof import ZKProof
 
 
 @dataclass
@@ -26,7 +26,7 @@ class TxOut:
     range_proof: RangeProof
 
 
-@dataclass  
+@dataclass
 class Tx:
     inputs: List[TxIn]
     outputs: List[TxOut]

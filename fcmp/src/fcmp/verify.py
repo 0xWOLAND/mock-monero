@@ -1,8 +1,7 @@
-from .group import Params
-from .keys import Key, prove_spend, verify_spend
-from .tree import Tree, root, hash_leaf
-from .zkproof import prove as zk_prove, verify as zk_verify
-from .tx import TxIn, Tx, verify_range
+from common import CryptoParams, FCMPKey, prove_spend, verify_spend
+from fcmp.tree import Tree, root, hash_leaf
+from fcmp.zkproof import prove as zk_prove, verify as zk_verify
+from fcmp.tx import TxIn, Tx, verify_range
 
 
 UTXO_P = []
@@ -10,28 +9,32 @@ UTXO_C = []
 UTXO_LEAVES = []
 
 
-def add_utxo(pp: Params, P: int, C: int) -> int:
+def add_utxo(pp: CryptoParams, P: int, C: int) -> int:
     leaf = hash_leaf(pp, P, C)
     UTXO_P.append(P)
-    UTXO_C.append(C) 
+    UTXO_C.append(C)
     UTXO_LEAVES.append(leaf)
     return len(UTXO_LEAVES) - 1
 
 
-def build_tree(pp: Params) -> Tree:
-    from .tree import build
+def build_tree(pp: CryptoParams) -> Tree:
+    from fcmp.tree import build
+
     return build(pp, UTXO_LEAVES)
 
 
-def prove_input(pp: Params, tree: Tree, key: Key, C: int, idx: int, ctx: bytes) -> TxIn:
+def prove_input(
+    pp: CryptoParams, tree: Tree, key: FCMPKey, C: int, idx: int, ctx: bytes
+) -> TxIn:
     root_val = root(tree)
     spend_proof = prove_spend(pp, key, root_val, ctx)
     zk_proof = zk_prove(pp, tree, key.P, C, idx, ctx)
-    return TxIn(P=key.P, I=key.I, C=C, root=root_val, 
-                spend_proof=spend_proof, zk_proof=zk_proof)
+    return TxIn(
+        P=key.P, I=key.I, C=C, root=root_val, spend_proof=spend_proof, zk_proof=zk_proof
+    )
 
 
-def verify_input(pp: Params, txin: TxIn, current_root: int, ctx: bytes) -> bool:
+def verify_input(pp: CryptoParams, txin: TxIn, current_root: int, ctx: bytes) -> bool:
     if txin.root != current_root:
         return False
     if not verify_spend(pp, txin.P, txin.I, txin.root, txin.spend_proof, ctx):
@@ -41,7 +44,7 @@ def verify_input(pp: Params, txin: TxIn, current_root: int, ctx: bytes) -> bool:
     return True
 
 
-def verify_tx(pp: Params, tx: Tx, tree: Tree, spent_tags: set[int]) -> bool:
+def verify_tx(pp: CryptoParams, tx: Tx, tree: Tree, spent_tags: set[int]) -> bool:
     root_val = root(tree)
 
     for txin in tx.inputs:

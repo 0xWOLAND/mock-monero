@@ -4,6 +4,7 @@ requires-python = ">=3.11"
 
 [manifest]
 members = [
+    "common",
     "fcmp",
     "mock-monero",
     "monero",
@@ -19,9 +20,31 @@ wheels = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+source = { editable = "common" }
+
+[package.dev-dependencies]
+dev = [
+    { name = "common" },
+    { name = "pytest" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "common", editable = "common" },
+    { name = "pytest", specifier = ">=8.4.1" },
+]
+
+[[package]]
 name = "fcmp"
 version = "0.1.0"
-source = { editable = "fcmp" }
+source = { virtual = "fcmp" }
+dependencies = [
+    { name = "common" },
+]
 
 [package.optional-dependencies]
 dev = [
@@ -35,12 +58,15 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" }]
+requires-dist = [
+    { name = "common", editable = "common" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
+]
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "fcmp", editable = "fcmp" },
+    { name = "fcmp", virtual = "fcmp" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]
 
@@ -58,13 +84,15 @@ name = "mock-monero"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "common" },
     { name = "fcmp" },
     { name = "monero" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "fcmp", editable = "fcmp" },
+    { name = "common", editable = "common" },
+    { name = "fcmp", virtual = "fcmp" },
     { name = "monero", editable = "monero" },
 ]
 
@@ -72,6 +100,9 @@ requires-dist = [
 name = "monero"
 version = "0.1.0"
 source = { editable = "monero" }
+dependencies = [
+    { name = "common" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -80,6 +111,7 @@ dev = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "common", editable = "common" }]
 
 [package.metadata.requires-dev]
 dev = [

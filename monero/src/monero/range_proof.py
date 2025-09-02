@@ -1,11 +1,8 @@
-"""Range proof stub implementation."""
-
 from dataclasses import dataclass
 
 
 @dataclass
 class RangeProofStub:
-    """Stub range proof structure."""
     blob: bytes
 
 

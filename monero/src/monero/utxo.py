@@ -1,5 +1,3 @@
-"""UTXO management and global state."""
-
 from dataclasses import dataclass
 from typing import List
 
@@ -7,10 +5,11 @@ from typing import List
 @dataclass
 class UTXO:
     """Unspent Transaction Output."""
-    P: int   # Public key
-    C: int   # Commitment
-    v: int   # Value (stored for demo)
-    r: int   # Blinding factor (stored for demo)
+
+    P: int  # Public key
+    C: int  # Commitment
+    v: int  # Value (stored for demo)
+    r: int  # Blinding factor (stored for demo)
     sk: int  # Secret key (stored for demo wallet)
 
 

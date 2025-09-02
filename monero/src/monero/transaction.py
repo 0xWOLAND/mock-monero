@@ -1,43 +1,43 @@
-"""Transaction structures and operations."""
-
 import secrets
 from dataclasses import dataclass
 from typing import List, Set, Tuple
-from .group import Params
-from .keys import Keypair, key_image
-from .commitments import commit
-from .ring import RingSig, ring_prove, ring_verify
-from .zklink import ZKLink, zklink_prove, zklink_verify
-from .range_proof import RangeProofStub, verify_range_stub
-from .utxo import UTXO, GLOBAL
+from common import CryptoParams, Keypair, key_image, commit
+
+from monero.ring import RingSig, ring_prove, ring_verify
+from monero.zklink import ZKLink, zklink_prove, zklink_verify
+from monero.range_proof import RangeProofStub, verify_range_stub
+from monero.utxo import UTXO, GLOBAL
 
 
 @dataclass
 class TxIn:
     """Transaction input."""
-    ring_P: List[int]    # Ring of public keys
-    ring_C: List[int]    # Ring of commitments
-    I: int               # Key image
-    sig: RingSig         # Ring signature
-    C_pseudo: int        # Pseudo-input commitment
-    link_proof: ZKLink   # ZK link proof
+
+    ring_P: List[int]  # Ring of public keys
+    ring_C: List[int]  # Ring of commitments
+    I: int  # Key image
+    sig: RingSig  # Ring signature
+    C_pseudo: int  # Pseudo-input commitment
+    link_proof: ZKLink  # ZK link proof
 
 
 @dataclass
 class TxOut:
     """Transaction output."""
-    P: int                   # Recipient public key
-    C: int                   # Commitment
-    rp: RangeProofStub      # Range proof
+
+    P: int  # Recipient public key
+    C: int  # Commitment
+    rp: RangeProofStub  # Range proof
 
 
 @dataclass
 class Tx:
     """Transaction."""
-    ins: List[TxIn]     # Inputs
-    outs: List[TxOut]   # Outputs
-    fee: int            # Transaction fee
-    ctx: bytes          # Context/message
+
+    ins: List[TxIn]  # Inputs
+    outs: List[TxOut]  # Outputs
+    fee: int  # Transaction fee
+    ctx: bytes  # Context/message
 
 
 def build_ring_indices(n: int, real_idx: int, ring_size: int) -> List[int]:
@@ -52,7 +52,9 @@ def build_ring_indices(n: int, real_idx: int, ring_size: int) -> List[int]:
     return idxs
 
 
-def prove_input(pp: Params, ctx: bytes, utxo_index: int, ring_size: int) -> Tuple[TxIn, int]:
+def prove_input(
+    pp: CryptoParams, ctx: bytes, utxo_index: int, ring_size: int
+) -> Tuple[TxIn, int]:
     """
     Create a transaction input by proving ownership of a UTXO.
     Returns the TxIn and the pseudo-input blinding factor.
@@ -84,7 +86,7 @@ def prove_input(pp: Params, ctx: bytes, utxo_index: int, ring_size: int) -> Tupl
     return TxIn(ring_P, ring_C, I, sig, C_pseudo, link), r_pseudo
 
 
-def verify_tx(pp: Params, tx: Tx, spent_images: Set[int]) -> bool:
+def verify_tx(pp: CryptoParams, tx: Tx, spent_images: Set[int]) -> bool:
     """Verify a transaction."""
     # 0) Double-spend check
     for tin in tx.ins:
@@ -95,7 +97,9 @@ def verify_tx(pp: Params, tx: Tx, spent_images: Set[int]) -> bool:
     for tin in tx.ins:
         if not ring_verify(pp, tx.ctx, tin.ring_P, tin.ring_C, tin.I, tin.sig):
             return False
-        if not zklink_verify(pp, tx.ctx, tin.ring_P, tin.ring_C, tin.I, tin.C_pseudo, tin.link_proof):
+        if not zklink_verify(
+            pp, tx.ctx, tin.ring_P, tin.ring_C, tin.I, tin.C_pseudo, tin.link_proof
+        ):
             return False
 
     # 2) Outputs: range-proof stubs

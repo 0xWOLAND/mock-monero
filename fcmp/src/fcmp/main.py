@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 import secrets
-from .group import setup, commit
-from .keys import gen_key
-from .tree import root
-from .tx import TxOut, Tx, prove_range
-from .verify import add_utxo, build_tree, prove_input, verify_tx, UTXO_C
+from common import setup, commit, gen_key
+from fcmp.tree import root
+from fcmp.tx import TxOut, Tx, prove_range
+from fcmp.verify import add_utxo, build_tree, prove_input, verify_tx, UTXO_C
 
 
 def main():
@@ -14,7 +12,7 @@ def main():
     owners = [gen_key(pp) for _ in range(N)]
     values = [10 * (i + 1) for i in range(N)]
     blinds = [secrets.randbelow(pp.q - 1) + 1 for _ in range(N)]
-    
+
     indices = []
     for i in range(N):
         C = commit(pp, values[i], blinds[i])
@@ -31,11 +29,11 @@ def main():
     v1 = 17
     v2 = values[i] - v1 - fee
     assert v2 >= 0
-    
+
     r_in = blinds[i]
     r1 = secrets.randbelow(pp.q - 1) + 1
     r2 = (r_in - r1) % pp.q
-    
+
     dest1, dest2 = gen_key(pp), gen_key(pp)
     C_out1 = commit(pp, v1, r1)
     C_out2 = commit(pp, v2, r2)

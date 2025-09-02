@@ -1,7 +1,5 @@
-"""Test the main demo functionality."""
-
 import pytest
-from monero import setup, keygen, commit, add_utxo, UTXO, clear_utxos
+from common import setup, keygen, commit, add_utxo, UTXO, clear_utxos
 
 
 def test_setup():
@@ -34,9 +32,9 @@ def test_utxo_management():
     kp = keygen(pp)
     val, blind = 50, 123
     c = commit(pp, val, blind)
-    
+
     utxo = UTXO(P=kp.P, C=c, v=val, r=blind, sk=kp.sk)
     idx = add_utxo(utxo)
     assert idx == 0
-    
+
     clear_utxos()  # Clean up

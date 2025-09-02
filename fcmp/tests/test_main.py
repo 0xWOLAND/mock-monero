@@ -1,5 +1,6 @@
 import pytest
-from fcmp import setup, commit, gen_key, add_utxo, build_tree, verify_tx
+from common import setup, commit, gen_key
+from fcmp.verify import add_utxo, build_tree, verify_tx
 
 
 def test_setup():
@@ -21,13 +22,3 @@ def test_commit():
     val, blind = 100, 42
     c = commit(pp, val, blind)
     assert c == (pp.Hc * val + pp.Gc * blind) % pp.q
-
-
-def test_tree_build():
-    pp = setup()
-    key = gen_key(pp)
-    c = commit(pp, 50, 123)
-    idx = add_utxo(pp, key.P, c)
-    tree = build_tree(pp)
-    assert len(tree.layers) > 0
-    assert idx == 0

@@ -1,17 +1,12 @@
-"""Main demo function for Monero RingCT implementation."""
-
 import secrets
 from typing import Set
-from .group import setup
-from .keys import keygen
-from .commitments import commit
-from .transaction import Tx, TxOut, prove_input, verify_tx
-from .range_proof import range_prove_stub
-from .utxo import UTXO, add_utxo
+from common import setup, keygen, commit
+from monero.transaction import Tx, TxOut, prove_input, verify_tx
+from monero.range_proof import range_prove_stub
+from monero.utxo import UTXO, add_utxo
 
 
 def main() -> None:
-    """Run the Monero RingCT demo."""
     pp = setup()
 
     # Wallets / initial UTXOs
@@ -33,6 +28,7 @@ def main() -> None:
 
     # Choose output amounts (must satisfy v1 + v2 + fee = v_in)
     from .utxo import GLOBAL
+
     v_in = GLOBAL[spend_idx].v
     v1 = 17
     v2 = v_in - v1 - fee
@@ -48,8 +44,10 @@ def main() -> None:
 
     tx = Tx(
         ins=[txin],
-        outs=[TxOut(dest1.P, C1, range_prove_stub(v1)),
-              TxOut(dest2.P, C2, range_prove_stub(v2))],
+        outs=[
+            TxOut(dest1.P, C1, range_prove_stub(v1)),
+            TxOut(dest2.P, C2, range_prove_stub(v2)),
+        ],
         fee=fee,
         ctx=ctx,
     )

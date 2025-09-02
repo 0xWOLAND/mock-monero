@@ -1,31 +1,51 @@
-"""LSAG-style ring signature implementation."""
-
 import secrets
 from dataclasses import dataclass
 from typing import List
-from .group import Params
-from .keys import Keypair, Hp
-from .utils import i2b, Hs
+from common import CryptoParams, Keypair, Hp, to_bytes, hash_mod
 
 
 @dataclass
 class RingSig:
     """Ring signature structure."""
-    c0: int         # Initial challenge
-    s: List[int]    # Response values for all ring members
+
+    c0: int  # Initial challenge
+    s: List[int]  # Response values for all ring members
 
 
-def ring_chal(pp: Params, ctx: bytes, I: int, ring_P: List[int], 
-              ring_C: List[int], L: int, R: int) -> int:
+def ring_chal(
+    pp: CryptoParams,
+    ctx: bytes,
+    I: int,
+    ring_P: List[int],
+    ring_C: List[int],
+    L: int,
+    R: int,
+) -> int:
     """Compute ring signature challenge."""
-    return Hs(pp.q, b"LSAG", ctx, i2b(I),
-              b"".join(i2b(p) for p in ring_P),
-              b"".join(i2b(c) for c in ring_C),
-              i2b(L), i2b(R))
+    return (
+        hash_mod(
+            b"LSAG",
+            ctx,
+            to_bytes(I),
+            b"".join(to_bytes(p) for p in ring_P),
+            b"".join(to_bytes(c) for c in ring_C),
+            to_bytes(L),
+            to_bytes(R),
+            mod=pp.q,
+        )
+        or 1
+    )
 
 
-def ring_prove(pp: Params, ctx: bytes, ring_P: List[int], ring_C: List[int],
-               real_idx: int, kp: Keypair, I: int) -> RingSig:
+def ring_prove(
+    pp: CryptoParams,
+    ctx: bytes,
+    ring_P: List[int],
+    ring_C: List[int],
+    real_idx: int,
+    kp: Keypair,
+    I: int,
+) -> RingSig:
     """Generate a ring signature."""
     n = len(ring_P)
     Hp_list = [Hp(pp, P) for P in ring_P]
@@ -50,11 +70,19 @@ def ring_prove(pp: Params, ctx: bytes, ring_P: List[int], ring_C: List[int],
 
     # Close ring at real index
     s[real_idx] = (alpha - c[real_idx] * kp.sk) % pp.q
+    if s[real_idx] == 0:
+        s[real_idx] = 1  # Ensure signature component is never zero
     return RingSig(c0=c[0], s=s)
 
 
-def ring_verify(pp: Params, ctx: bytes, ring_P: List[int], ring_C: List[int],
-                I: int, sig: RingSig) -> bool:
+def ring_verify(
+    pp: CryptoParams,
+    ctx: bytes,
+    ring_P: List[int],
+    ring_C: List[int],
+    I: int,
+    sig: RingSig,
+) -> bool:
     """Verify a ring signature."""
     n = len(ring_P)
     Hp_list = [Hp(pp, P) for P in ring_P]
